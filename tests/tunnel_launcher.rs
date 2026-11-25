@@ -9,12 +9,13 @@ struct Fixture {
     project: PathBuf,
     binary: PathBuf,
     home: PathBuf,
-    client_bin: PathBuf,
 }
 
 impl Fixture {
     fn new() -> Self {
-        let temporary = tempfile::tempdir().unwrap();
+        let built_binary = Path::new(env!("CARGO_BIN_EXE_file-system-mcp"));
+        // Keep the relocated executable on the same filesystem without opening it for writing.
+        let temporary = tempfile::tempdir_in(built_binary.parent().unwrap()).unwrap();
         let project = temporary
             .path()
             .join("project with 'quotes,=and$characters");
@@ -22,18 +23,14 @@ impl Fixture {
         fs::create_dir_all(&release).unwrap();
         fs::write(project.join("Cargo.toml"), "[package]\nname = 'fixture'\n").unwrap();
         let binary = release.join("file-system-mcp");
-        fs::copy(env!("CARGO_BIN_EXE_file-system-mcp"), &binary).unwrap();
+        fs::hard_link(built_binary, &binary).unwrap();
         let home = temporary.path().join("home");
         fs::create_dir_all(home.join("workspace")).unwrap();
-        let client_bin = temporary.path().join("client-bin");
-        fs::create_dir(&client_bin).unwrap();
-        write_fake_client(&client_bin);
         Self {
             temporary,
             project,
             binary,
             home,
-            client_bin,
         }
     }
 
@@ -49,7 +46,10 @@ impl Fixture {
         let mut command = Command::new(&self.binary);
         command.arg("tunnel").env_clear();
         command
-            .env("PATH", &self.client_bin)
+            .env(
+                "PATH",
+                Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures"),
+            )
             .env("HOME", &self.home);
         command.env("CAPTURE_ARGS", self.capture("args"));
         command.env("CAPTURE_ENV", self.capture("env"));
@@ -67,24 +67,6 @@ impl Fixture {
     fn captured(&self, name: &str) -> String {
         fs::read_to_string(self.capture(name)).unwrap()
     }
-}
-
-fn write_fake_client(directory: &Path) {
-    let client = directory.join("tunnel-client");
-    fs::write(&client, r#"#!/bin/sh
-printf '%s\n' "$@" > "$CAPTURE_ARGS"
-printf '%s\n' "$CONTROL_PLANE_API_KEY" "$CONTROL_PLANE_TUNNEL_ID" "$WORKSPACE_ROOT" > "$CAPTURE_ENV"
-printf '%s\n' "$MCP_OBSERVER_SOURCE" "$FILE_SYSTEM_MCP_TUNNEL_LAUNCH" > "$CAPTURE_SOURCE"
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        --mcp.command) mcp_command=$2; shift 2 ;;
-        *) shift ;;
-    esac
-done
-printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"workspace_info","arguments":{}}}' | /bin/sh -c "$mcp_command" > "$CAPTURE_MCP"
-exit "${FAKE_EXIT_CODE:-0}"
-"#).unwrap();
-    fs::set_permissions(client, fs::Permissions::from_mode(0o700)).unwrap();
 }
 
 fn assert_success(output: &Output) {
