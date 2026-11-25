@@ -36,8 +36,8 @@ The database must be outside the workspace. New database and lock files use owne
 
 ## Reporting a vulnerability
 
-Do not open a public issue containing credentials, private files, or an exploitable vulnerability. When the GitHub repository has private vulnerability reporting enabled, use **Security → Report a vulnerability** to contact its maintainers privately. This document does not imply that reporting has already been enabled.
+Do not open a public issue containing credentials, private files, or an exploitable vulnerability. Contact the maintainers through [GitHub private vulnerability reporting](https://github.com/cleisson-labs/file-system-mcp/security/advisories/new).
 
 If private reporting is unavailable, ask maintainers in a public issue for a private reporting channel without including exploit details or sensitive data. Include the affected version or commit, operating system, a minimal reproduction with synthetic data, expected behavior, and impact in the private report. If a credential has been exposed, revoke or rotate it through its issuer.
 
-Fixes are made against the current codebase; no long-term support or response-time commitment is established. GitHub private vulnerability reporting is available for public repositories. Maintainers should enable it immediately after changing visibility to public and verify the reporting button before inviting reports. See [GitHub's repository configuration guide](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
+Fixes are made against the current codebase; no long-term support or response-time commitment is established.

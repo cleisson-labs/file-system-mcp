@@ -1,5 +1,9 @@
 # File System MCP
 
+[![CI](https://github.com/cleisson-labs/file-system-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cleisson-labs/file-system-mcp/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/cleisson-labs/file-system-mcp)](LICENSE)
+[![Coverage report](https://img.shields.io/badge/coverage-CI_report-blue)](https://github.com/cleisson-labs/file-system-mcp/actions/workflows/ci.yml?query=branch%3Amain)
+
 A Rust MCP server that lets ChatGPT and other MCP clients read, search, create, edit, patch, copy, move, and delete files inside a configured workspace. It exposes 15 tools over stdio and includes a local SQLite-backed usage dashboard.
 
 The workspace root defines the filesystem boundary. Protected paths, Git ignore rules, symlinks, and operation limits restrict access. An explicit root enables mutations; automatic root discovery is read-only. The server runs with its host user's permissions, so review the [security policy](SECURITY.md) before choosing a workspace.

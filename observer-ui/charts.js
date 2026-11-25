@@ -86,14 +86,20 @@ export function renderVolumeChart(container, detail, timeline) {
   const hits = [];
   addGrid(chart, maximum, width);
   addAxis(chart, buckets, width);
-  buckets.forEach((bucket, index) => chart.append(interactiveBar(bucket, chartBar(bucket, index, buckets.length, maximum, width), index, hits, detail, container)));
+  for (const [index, bucket] of buckets.entries()) {
+    const bar = chartBar(bucket, index, buckets.length, maximum, width);
+    chart.append(interactiveBar(bucket, bar, index, hits, detail, container));
+  }
   if (!buckets.some(bucket => bucket.calls)) chart.append(svgNode('text', { x: width / 2, y: HEIGHT / 2, 'text-anchor': 'middle', class: 'chart-label' }, 'No tool calls in the last 60 minutes'));
   container.replaceChildren(chart);
   const selected = buckets.find(bucket => String(bucket.minute_start_ms) === container.dataset.selectedMinute);
   detail.textContent = selected ? detailText(selected) : 'Hover a minute to inspect its activity. Use arrow keys when the chart is focused.';
   if (focusedMinute) {
     const focused = hits.find(hit => hit.dataset.minute === focusedMinute);
-    if (focused) { hits.forEach(hit => hit.setAttribute('tabindex', hit === focused ? '0' : '-1')); focused.focus({ preventScroll: true }); }
+    if (focused) {
+      for (const hit of hits) hit.setAttribute('tabindex', hit === focused ? '0' : '-1');
+      focused.focus({ preventScroll: true });
+    }
   }
 }
 

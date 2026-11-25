@@ -189,7 +189,7 @@ function renderStorage(snapshot) {
 }
 
 function validSnapshot(snapshot) {
-  return snapshot && snapshot.server && snapshot.summary && snapshot.retention
+  return snapshot?.server && snapshot.summary && snapshot.retention
     && ['tools', 'recent_calls', 'timeline', 'active_calls'].every(key => Array.isArray(snapshot[key]));
 }
 
@@ -271,7 +271,7 @@ function bindNavigation() {
       else link.removeAttribute('aria-current');
     }
   }, { rootMargin: '-90px 0px -55% 0px' });
-  sections.forEach(section => observer.observe(section));
+  for (const section of sections) observer.observe(section);
 }
 
 function start() {
