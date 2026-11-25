@@ -1,5 +1,6 @@
 use rustix::fd::OwnedFd;
 use sha2::{Digest, Sha256};
+use std::fmt::Write;
 use std::fs::{File, Metadata};
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -37,7 +38,12 @@ pub struct WalkResult {
 }
 
 pub fn content_hash(content: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(content))
+    let digest = Sha256::digest(content);
+    let mut hash = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        write!(hash, "{byte:02x}").expect("writing to a String is infallible");
+    }
+    hash
 }
 
 impl Workspace {

@@ -104,7 +104,10 @@ fn files_can_be_created_inspected_edited_and_replaced_without_lost_updates() {
     let info = success(&mut client, "file_info", json!({"path": "src/config.txt"}));
     assert_eq!(info["type"], "file");
     assert_eq!(info["size"], 6);
-    assert_eq!(info["content_hash"].as_str().unwrap().len(), 64);
+    assert_eq!(
+        info["content_hash"],
+        "b6a98d9ce9a2d9149288fa3df42d377c3e42737afdcdaf714e33c0a100b51060"
+    );
     assert_eq!(info["content_hash"], created["content_hash"]);
     failure(
         &mut client,
