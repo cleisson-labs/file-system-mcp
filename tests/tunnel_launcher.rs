@@ -14,8 +14,13 @@ struct Fixture {
 impl Fixture {
     fn new() -> Self {
         let built_binary = Path::new(env!("CARGO_BIN_EXE_file-system-mcp"));
-        // Keep the relocated executable on the same filesystem without opening it for writing.
-        let temporary = tempfile::tempdir_in(built_binary.parent().unwrap()).unwrap();
+        let temporary = if cfg!(target_os = "linux") {
+            // A Linux hard link must share the Cargo binary's filesystem.
+            tempfile::tempdir_in(built_binary.parent().unwrap())
+        } else {
+            tempfile::tempdir()
+        }
+        .unwrap();
         let project = temporary
             .path()
             .join("project with 'quotes,=and$characters");
@@ -23,7 +28,13 @@ impl Fixture {
         fs::create_dir_all(&release).unwrap();
         fs::write(project.join("Cargo.toml"), "[package]\nname = 'fixture'\n").unwrap();
         let binary = release.join("file-system-mcp");
-        fs::hard_link(built_binary, &binary).unwrap();
+        if cfg!(target_os = "linux") {
+            // exec can return ETXTBSY while another process holds a copied binary open for writing.
+            fs::hard_link(built_binary, &binary).unwrap();
+        } else {
+            // Keep a distinct executable identity for each relocated macOS fixture.
+            fs::copy(built_binary, &binary).unwrap();
+        }
         let home = temporary.path().join("home");
         fs::create_dir_all(home.join("workspace")).unwrap();
         Self {
@@ -72,7 +83,8 @@ impl Fixture {
 fn assert_success(output: &Output) {
     assert!(
         output.status.success(),
-        "{}",
+        "tunnel exited with {}: {}",
+        output.status,
         String::from_utf8_lossy(&output.stderr)
     );
 }
