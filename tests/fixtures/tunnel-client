@@ -1,0 +1,15 @@
+#!/bin/sh
+printf '%s\n' "$@" >"$CAPTURE_ARGS"
+printf '%s\n' "$CONTROL_PLANE_API_KEY" "$CONTROL_PLANE_TUNNEL_ID" "$WORKSPACE_ROOT" >"$CAPTURE_ENV"
+printf '%s\n' "$MCP_OBSERVER_SOURCE" "$FILE_SYSTEM_MCP_TUNNEL_LAUNCH" >"$CAPTURE_SOURCE"
+while [ "$#" -gt 0 ]; do
+	case "$1" in
+	--mcp.command)
+		mcp_command=$2
+		shift 2
+		;;
+	*) shift ;;
+	esac
+done
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"workspace_info","arguments":{}}}' | /bin/sh -c "$mcp_command" >"$CAPTURE_MCP"
+exit "${FAKE_EXIT_CODE:-0}"
