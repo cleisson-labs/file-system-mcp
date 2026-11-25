@@ -287,7 +287,11 @@ fn check_move_destination(source: &std::fs::Metadata, destination: &Entry) -> Re
     if FileType::from_raw_mode(stat.st_mode) == FileType::Directory {
         return Err("Existing directory destinations cannot be overwritten".into());
     }
-    if source.dev() == stat.st_dev as u64 && source.ino() == stat.st_ino {
+    let device = stat.st_dev;
+    // Darwin uses a signed dev_t. Match MetadataExt::dev's conversion to u64.
+    #[cfg(target_os = "macos")]
+    let device = device as u64;
+    if source.dev() == device && source.ino() == stat.st_ino {
         return Err(
             "Source and destination are hard links to the same file; rename would not move it"
                 .into(),

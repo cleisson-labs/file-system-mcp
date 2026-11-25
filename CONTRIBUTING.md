@@ -47,6 +47,12 @@ node --check observer-ui/activity.js
 node --test tests/observer_ui.test.mjs
 ```
 
+CI also lints dashboard JavaScript with standalone Biome 2.6.9 and checks whitespace across all JavaScript modules. Run the same lint check with the Biome CLI:
+
+```bash
+biome lint --error-on-warnings observer-ui/*.js tests/observer_ui.test.mjs
+```
+
 For focused observer work:
 
 ```bash
